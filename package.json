@@ -26,12 +26,13 @@
     },
     "files": [
       "src/**/*",
-      "package.json",
-      ".env"
+      "package.json"
     ],
     "extraResources": [
-      { "from": ".env", "to": ".." }
+      { "from": ".env", "to": "." }
     ],
+    "asar": true,
+    "asarUnpack": [],
     "win": {
       "icon": "src/assets/icon.png",
       "target": [

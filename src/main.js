@@ -4,14 +4,27 @@
 // ============================================================================
 
 const path = require('path');
-// Load .env from project root (dev) or from packaged app resources (production)
-const envPaths = [
-  path.join(__dirname, '..', '.env'),
-  path.join(process.resourcesPath || __dirname, '.env')
+const fs = require('fs');
+
+// Load .env — try multiple locations (dev → packaged app)
+const envCandidates = [
+  path.join(__dirname, '..', '.env'),                              // dev: project root
+  path.join(process.resourcesPath || '', '.env'),                  // packaged: resources/
+  path.join(path.dirname(process.execPath), '.env'),               // next to .exe
+  path.join(path.dirname(process.execPath), 'resources', '.env'),  // resources next to .exe
 ];
-for (const p of envPaths) {
-  try { if (require('fs').existsSync(p)) { require('dotenv').config({ path: p, override: true }); break; } } catch(e) {}
+let envLoaded = false;
+for (const p of envCandidates) {
+  try {
+    if (p && fs.existsSync(p)) {
+      require('dotenv').config({ path: p, override: true });
+      console.log('Loaded .env from:', p);
+      envLoaded = true;
+      break;
+    }
+  } catch(e) {}
 }
+if (!envLoaded) console.error('WARNING: .env not found! App may not connect to database.');
 
 const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell, dialog } = require('electron');
 const fs = require('fs');
@@ -48,13 +61,22 @@ const transporter = nodemailer.createTransport({
 });
 
 let currentUser = null;
+let dbConnected = false;
 
 async function connectDB() {
+  if (!MONGODB_URI) {
+    console.error('MONGODB_URI is not set — .env file may be missing');
+    return;
+  }
   try {
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 10000,  // 10s timeout instead of hanging forever
+      connectTimeoutMS: 10000,
+    });
+    dbConnected = true;
     console.log('Connected to MongoDB Atlas');
   } catch (err) {
-    console.error('MongoDB Connection Error:', err);
+    console.error('MongoDB Connection Error:', err.message);
   }
 }
 connectDB();
@@ -293,6 +315,7 @@ ipcMain.on('flash-window', () => {
 
 ipcMain.handle('auth-login', async (_e, { email, password }) => {
   try {
+    if (!dbConnected) return { success: false, message: 'Database not connected. Check your internet connection and restart the app.' };
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return { success: false, message: 'User not found' };
     if (!user.is_verified) return { success: false, message: 'Please verify your email first' };
@@ -313,6 +336,7 @@ ipcMain.handle('auth-login', async (_e, { email, password }) => {
 
 ipcMain.handle('auth-register', async (_e, { email, password, first_name: firstName }) => {
   try {
+    if (!dbConnected) return { success: false, message: 'Database not connected. Check your internet connection and restart the app.' };
     const lowerEmail = email.toLowerCase();
     const existing = await User.findOne({ email: lowerEmail });
 
