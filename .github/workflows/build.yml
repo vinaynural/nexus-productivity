@@ -13,6 +13,7 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,6 +49,7 @@ jobs:
 
   build-mac:
     runs-on: macos-latest
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,6 +87,7 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -119,7 +122,6 @@ jobs:
             dist/*.deb
           retention-days: 30
 
-  # Create GitHub Release when a tag is pushed
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [build-windows, build-mac, build-linux]
@@ -147,21 +149,24 @@ jobs:
             ### Downloads
             | Platform | File |
             |----------|------|
-            | Windows (Installer) | `NEXUS-Setup-*.exe` |
-            | Windows (Portable) | `NEXUS-*-portable.exe` |
+            | Windows (Installer) | `NEXUS Setup *.exe` |
+            | Windows (Portable) | `NEXUS *.exe` |
             | macOS | `NEXUS-*.dmg` |
             | Linux (AppImage) | `NEXUS-*.AppImage` |
             | Linux (Debian) | `nexus-productivity_*.deb` |
 
-            ### What's New
-            - Dashboard with Life Score
-            - Habit tracking with streaks
-            - Goal breakdown with milestones
-            - Fitness & health logging
-            - Career & skill tracking with radar chart
-            - Focus sessions (Pomodoro)
-            - Smart alerts & email notifications
-            - Weekly review with insights
+            ### Features
+            - Dashboard with Life Score (0-100)
+            - Habit tracking with streaks and analytics
+            - Goal system with milestones
+            - Fitness & health logging (sleep, water, mood, energy, workouts)
+            - Career tracker with SVG skill radar chart
+            - Focus sessions (Pomodoro) with distraction tracking
+            - Smart alerts (burnout, streak risk, overdue, time debt)
+            - Email notifications (timer done, focus done, daily summary)
+            - Windows native notifications + taskbar flash
+            - Unified timeline view
+            - Weekly review with auto-generated insights
           files: |
             artifacts/**/*.exe
             artifacts/**/*.dmg
