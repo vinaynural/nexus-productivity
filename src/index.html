@@ -1155,17 +1155,23 @@ async function showApp() {
 // ================================================================
 // AUTH
 // ================================================================
-function toggleAuth(isReg) {
-  document.getElementById('login-form').style.display = isReg ? 'none' : 'block';
-  document.getElementById('register-form').style.display = isReg ? 'block' : 'none';
-  document.getElementById('otp-form').style.display = 'none';
-  document.getElementById('auth-sub').textContent = isReg ? 'Create your workspace' : 'Daily Life Operating System';
-  document.getElementById('auth-error').style.display = 'none';
-}
+window.toggleAuth = function(isReg) {
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  const otpForm = document.getElementById('otp-form');
+  const authSub = document.getElementById('auth-sub');
+  const authError = document.getElementById('auth-error');
+
+  if (loginForm) loginForm.style.display = isReg ? 'none' : 'block';
+  if (registerForm) registerForm.style.display = isReg ? 'block' : 'none';
+  if (otpForm) otpForm.style.display = 'none';
+  if (authSub) authSub.textContent = isReg ? 'Create your workspace' : 'Daily Life Operating System';
+  if (authError) authError.style.display = 'none';
+};
 
 let pendingEmail = '';
 
-async function handleLogin() {
+window.handleLogin = async function() {
   const email = document.getElementById('l-email').value.trim();
   const password = document.getElementById('l-pass').value;
   if (!email || !password) return showAuthError('All fields required');
@@ -1174,9 +1180,9 @@ async function handleLogin() {
     if (res.success) { user = res.user; showApp(); }
     else showAuthError(res.message || 'Login failed');
   } catch (e) { showAuthError('Connection error'); }
-}
+};
 
-async function handleRegister() {
+window.handleRegister = async function() {
   const first_name = document.getElementById('r-name').value.trim();
   const email = document.getElementById('r-email').value.trim();
   const password = document.getElementById('r-pass').value;
@@ -1193,7 +1199,7 @@ async function handleRegister() {
       } else { user = res.user; showApp(); }
     } else showAuthError(res.message || 'Registration failed');
   } catch (e) { showAuthError('Connection error'); }
-}
+};
 
 async function handleVerifyOTP() {
   const otp = document.getElementById('v-otp').value.trim();
@@ -1211,13 +1217,13 @@ function showAuthError(msg) {
   el.style.display = 'block';
 }
 
-async function handleLogout() {
+window.handleLogout = async function() {
   await API.logout().catch(() => {});
   user = null; tasks = []; habits = []; goals = []; notifications = [];
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
-  toggleAuth(false);
-}
+  window.toggleAuth(false);
+};
 
 // ================================================================
 // TITLEBAR
@@ -1996,7 +2002,9 @@ async function toggleTimer(id) {
         API.showNativeNotification('Timer Complete!', task.title + ' — time is up!');
         API.flashWindow();
         API.emailTimerDone(task.title);
-        try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2JkZeXkYx/cWBQQjY0OEJPXnB/ipOWlZCJfnBgUEE0MDhCUWF0hI2UlpONhn5vYFBBNDA3QVBZY3N/h4qKh4N+eHNtaGRiYmRna3F3fIOIi42Ni4mGg398eXd2dnh6fYCDhouMjIqJh4WAe3h1dHR1d3p9gIOGiYqKiomHhYJ+e3h2dHR2eHt+gYOGiIqKiYiGg4B9endzc3R2eXx+gYOGiIqKiYiGg4B9eXdz').catch(() => {});
+        try { 
+          new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2JkZeXkYx/cWBQQjY0OEJPXnB/ipOWlZCJfnBgUEE0MDhCUWF0hI2UlpONhn5vYFBBNDA3QVBZY3N/h4qKh4N+eHNtaGRiYmRna3F3fIOIi42Ni4mGg398eXd2dnh6fYCDhouMjIqJh4WAe3h1dHR1d3p9gIOGiYqKiomHhYJ+e3h2dHR2eHt+gYOGiIqKiYiGg4B9endzc3R2eXx+gYOGiIqKiYiGg4B9eXdz').play().catch(() => {});
+        } catch (e) {}
       }
       const el = document.getElementById('tp-' + id);
       if (el) refreshTimerEl(el, task);

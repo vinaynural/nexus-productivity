@@ -27,7 +27,6 @@ for (const p of envCandidates) {
 if (!envLoaded) console.error('WARNING: .env not found! App may not connect to database.');
 
 const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell, dialog } = require('electron');
-const fs = require('fs');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
